@@ -80,6 +80,7 @@ public class JpaMain {
             /**
              * 페이징
              */
+            /*
             List<Member> members = em.createQuery("select m from Member m order by m.age desc", Member.class)
                     .setFirstResult(0)
                     .setMaxResults(10)
@@ -88,6 +89,48 @@ public class JpaMain {
             for (Member member : members) {
                 System.out.println("member.getUsername() = " + member.getUsername());
             }
+
+             */
+
+            /**
+             * 조인
+             */
+
+            Team team = new Team();
+            team.setName("TeamA");
+
+            em.persist(team);
+
+            Member member = new Member();
+            member.setAge(10);
+            member.setUsername("HELLO");
+
+            member.changeTeam(team);
+
+            em.persist(member);
+
+            em.flush();
+            em.clear();
+
+            // 내부 조인
+            List<Member> members = em.createQuery("select m from Member m join m.team t", Member.class)
+                    .getResultList();
+
+            // 외부 조인
+            List<Member> leftMembers = em.createQuery("select m from Member m left join m.team t", Member.class)
+                    .getResultList();
+
+            // 세타 조인
+            List<Member> setaJoin = em.createQuery("select m from Member m, m.team t where m.username = t.name", Member.class)
+                        .getResultList();
+
+            // 조인 대상 필터링
+            List<Member> filteredMember = em.createQuery("select m from Member m left join m.team t on t.name = 'TeamA'", Member.class)
+                        .getResultList();
+
+            // 연관관계가 없는 엔티티 외부 조인
+            List<Member> leftJoin = em.createQuery("select m from Member m left join Team t on m.username = t.name", Member.class)
+                    .getResultList();
 
             tx.commit();
         } catch (Exception e) {
