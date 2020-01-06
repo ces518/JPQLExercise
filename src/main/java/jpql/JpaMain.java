@@ -47,6 +47,7 @@ public class JpaMain {
              * 프로젝션
              *
              */
+            /*
             // 엔티티 프로젝션을 사용하면 해당 엔티티들은 모두 영속성 컨텍스트에서 관리된다.
             List<Member> members = em.createQuery("select m from Member m", Member.class)
                     .getResultList();
@@ -73,6 +74,20 @@ public class JpaMain {
             // DTO를 활용하여 DTO 타입으로 받아온다.
             List<MemberDTO> memberDtos = em.createQuery("select new jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
                     .getResultList();
+
+             */
+
+            /**
+             * 페이징
+             */
+            List<Member> members = em.createQuery("select m from Member m order by m.age desc", Member.class)
+                    .setFirstResult(0)
+                    .setMaxResults(10)
+                    .getResultList();
+
+            for (Member member : members) {
+                System.out.println("member.getUsername() = " + member.getUsername());
+            }
 
             tx.commit();
         } catch (Exception e) {
