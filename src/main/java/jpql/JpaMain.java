@@ -152,6 +152,7 @@ public class JpaMain {
             /**
              * 조건식
              */
+            /*
             // case 문
             em.createQuery("select " +
                                         "case when m.age <= 10 then '학생요금' " +
@@ -166,6 +167,33 @@ public class JpaMain {
             // nullif
             // 이름이 관리자 라면 null로 출력
             em.createQuery("select nullif(m.username, '관리자') from Member m");
+
+             */
+
+            /**
+             * JPQL 함수
+             */
+            // 기본 함수
+            em.createQuery("select concat('a', 'b') from Member m");
+            em.createQuery("select substring(m.username, 2, 3) from Member m");
+            em.createQuery("select trim(m.username) from Member m");
+            em.createQuery("select lower(m.username) from Member m ");
+            em.createQuery("select upper(m.username) from Member m ");
+            em.createQuery("select length(m.username) from Member m");
+            // 해당 문자열의 위치를 반환
+            em.createQuery("select locate('de', 'abcdef') from Member m ");
+            em.createQuery("select abs(1.0) from Member m");
+            // 연관관계를 맺고 있는 컬렉션의 크기를 알려준다. (JPA 함수)
+            em.createQuery("select size(t.members) from Team t");
+            // 값 타입 컬렉션에서의 인덱스를 반환한다. 사용하지 않는것을 추천 (JPA함수)
+            em.createQuery("select index(t.members) from Team t");
+
+            // 사용자 정의 함수
+            // 이름1, 이름2, 이름3 형태로 한줄로 합쳐버린다.
+            em.createQuery("select function('group_concat', m.username) from Member m");
+            // 하이버네이트 일경우
+            em.createQuery("select group_concat(m.username) from Member m");
+
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
