@@ -95,7 +95,7 @@ public class JpaMain {
             /**
              * 조인
              */
-
+            /*
             Team team = new Team();
             team.setName("TeamA");
 
@@ -131,6 +131,19 @@ public class JpaMain {
             // 연관관계가 없는 엔티티 외부 조인
             List<Member> leftJoin = em.createQuery("select m from Member m left join Team t on m.username = t.name", Member.class)
                     .getResultList();
+
+
+             */
+
+            /**
+             * JPQL 타입표현
+             */
+            // string, boolean, 숫자는 자바와 동일하고, enum 타입은 풀패키지 경로를 입력해 주어야한다.
+            List<Object[]> result = em.createQuery("select m.username, 'HELLO', true from Member m where m.type = jpql.MemberType.USER")
+                .getResultList();
+
+            // 상속관계에서 다음과 같이 엔티티 타입 사용도 가능하다.
+            em.createQuery("select i from Item i where type(i) = Book");
 
             tx.commit();
         } catch (Exception e) {
