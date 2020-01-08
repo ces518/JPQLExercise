@@ -138,6 +138,7 @@ public class JpaMain {
             /**
              * JPQL 타입표현
              */
+            /*
             // string, boolean, 숫자는 자바와 동일하고, enum 타입은 풀패키지 경로를 입력해 주어야한다.
             List<Object[]> result = em.createQuery("select m.username, 'HELLO', true from Member m where m.type = jpql.MemberType.USER")
                 .getResultList();
@@ -145,6 +146,26 @@ public class JpaMain {
             // 상속관계에서 다음과 같이 엔티티 타입 사용도 가능하다.
             em.createQuery("select i from Item i where type(i) = Book");
 
+
+             */
+
+            /**
+             * 조건식
+             */
+            // case 문
+            em.createQuery("select " +
+                                        "case when m.age <= 10 then '학생요금' " +
+                                            " when m.age >= 60 then '경로요금' " +
+                                            " else '일반요금' end " +
+                                    "from Member m");
+
+            // coalesce
+            // 이름이 없다면, 이름 없는 회원이라고 출력
+            em.createQuery("select coalesce(m.username, '이름 없는 회원') from Member m");
+
+            // nullif
+            // 이름이 관리자 라면 null로 출력
+            em.createQuery("select nullif(m.username, '관리자') from Member m");
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
