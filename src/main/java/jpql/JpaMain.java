@@ -198,6 +198,7 @@ public class JpaMain {
             /**
              * JPQL 경로 표현식
              */
+            /*
             // 상태 필드 경로 표현식
             em.createQuery("select m.username from Member m");
 
@@ -215,7 +216,92 @@ public class JpaMain {
             // 컬렉션 값 연관경로의 경우 묵시적 내부 조인이 발생하지만 추가 탐색은 불가능하다.
             // * From 절에서 명시적 조인을 통해 알리아스(별칭) 을 얻어온다면, 별칭을 통해 탐색이 가능하다.
             em.createQuery("select t.members from Team t");
+             */
+            /**
+             * 페치조인 - 기본
+             */
+            Team teamA = new Team();
+            teamA.setName("teamA");
 
+            Team teamB = new Team();
+            teamB.setName("teamB");
+
+            Member member1 = new Member();
+            member1.setUsername("member1");
+            member1.setTeam(teamA);
+
+            Member member2 = new Member();
+            member2.setUsername("member2");
+            member2.setTeam(teamB);
+
+            Member member3 = new Member();
+            member3.setUsername("member3");
+            member3.setTeam(teamB);
+
+            em.persist(teamA);
+            em.persist(teamB);
+            em.persist(member1);
+            em.persist(member2);
+            em.persist(member3);
+
+            em.flush();
+            em.clear();
+
+            // 이 시점에는 연관관계가 지연로딩 이기때문에 Member와, m.team은 프록시객체를 가지고 있다.
+            List<Member> members = em.createQuery("select m from Member m", Member.class)
+                    .getResultList();
+
+            for (Member member : members) {
+                // getTeam.getName() 을 호출하는 순간, 지연로딩이 되어, 쿼리가 추가적으로 나가게 된다.
+                System.out.println("member = " + member.getUsername() + "," + member.getTeam().getName());
+                // 회원 100명 조회시 -> 100번 나가게 됨.. (최악의 경우) N + 1 문제가 발생함.
+                // 이를 해결하는것이 fetch join
+            }
+
+            // 페치 조인을 해서 team을 한방 쿼리로 가져온다.
+            // 이때 팀의 정보를 같이 가져 왔기때문에 m.team은 프록시 객체가 아니다.
+            List<Member> fetchMembers = em.createQuery("select m from Member m join fetch m.team", Member.class)
+                    .getResultList();
+
+            for (Member fetchMember : fetchMembers) {
+                // N + 1 문제가 발생하지 않는다.
+                System.out.println("fetchMember = " + fetchMember.getUsername() + "," + fetchMember.getTeam().getName());
+            }
+
+            // 컬렉션 페치 조인
+            // 일대다 관계, 컬렉션 페치 조인
+            // * 주의할점 *
+            // 컬렉션조인 1:N 조인을 할경우 SQL에서도 마찬가지로 데이터가 뻥튀기 된다.
+            // teamA 소속 회원이 멤버1, 멤버2가 있다면
+            // teamA 멤버1
+            // teamA 멤버2
+            // 위와 같은형태로 로우가 2개로 나오며, teamA가 중복이 된다.
+            // teamA 엔티티가 중복으로 나온다..
+            List<Team> teams = em.createQuery("select t from Team t", Team.class)
+                    .getResultList();
+
+            for (Team team : teams) {
+                System.out.println("team.getName() = " + team.getName() + "," + team.getMembers().size());
+            }
+
+            // 페치 조인과 DISTINCT
+            // JPQL의 DISTINCT 2가지 기능 제공
+            // 1. SQL에 DISTINCT를 추가한다.
+            // 2. 애플리케이션에서 엔티티 중복을 제거한다.
+            List<Team> distinctTeams = em.createQuery("select distinct  t from Team t", Team.class)
+                    .getResultList();
+            // SQL DISTINCT 만으로는 중복 제거가 되지않아, JPA에서 같은 식별자를 가진 Team 엔티티를 제거해서 원했던 결과가 나온다.
+            System.out.println("distinctTeams.size() = " + distinctTeams.size());
+
+            // 페치 조인과 일반조인의 차이
+            // 일반 조인 실행시 연관된 엔티티를 함께 조회하지 않는다.
+
+            // 실제 데이터는 t 에 대한 데이터만 조회하게 된다.
+            // members에는 데이터가 로드되지 않았기 때문에 루프를 돌리면 SQL이 발생하게 된다.
+            em.createQuery("select t from Team t join t.members m").getResultList();
+
+            // 연관된 엔티티를 함께 조회한다.
+            em.createQuery("select t from Team t join fetch t.members t").getResultList();
 
 
             tx.commit();
