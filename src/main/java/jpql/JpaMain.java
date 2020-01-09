@@ -173,6 +173,7 @@ public class JpaMain {
             /**
              * JPQL 함수
              */
+            /*
             // 기본 함수
             em.createQuery("select concat('a', 'b') from Member m");
             em.createQuery("select substring(m.username, 2, 3) from Member m");
@@ -193,6 +194,29 @@ public class JpaMain {
             em.createQuery("select function('group_concat', m.username) from Member m");
             // 하이버네이트 일경우
             em.createQuery("select group_concat(m.username) from Member m");
+             */
+            /**
+             * JPQL 경로 표현식
+             */
+            // 상태 필드 경로 표현식
+            em.createQuery("select m.username from Member m");
+
+            // 단일 값 연관 경로 표현식
+            // 묵시적인 내부 조인이 발생한다.
+            // 추가적인 탐색이 가능하다.
+            // 묵시적인 내부조인이 발생하도록 JPQL을 짜서는 안된다.
+            // 성능 튜닝 단계에서 영향을 미친다.
+            // 왠만하면 JPQL 과 SQL을 맞추는것을 추천한다.
+            em.createQuery("select m.team.id, m.team.name from Member m");
+
+            // 컬렉션 값 연관경로
+            // 컬렉션의 경우 어떠한 값을 꺼내야할지 난감하다.
+            // JPA의 경우에는 제약을 두었음
+            // 컬렉션 값 연관경로의 경우 묵시적 내부 조인이 발생하지만 추가 탐색은 불가능하다.
+            // * From 절에서 명시적 조인을 통해 알리아스(별칭) 을 얻어온다면, 별칭을 통해 탐색이 가능하다.
+            em.createQuery("select t.members from Team t");
+
+
 
             tx.commit();
         } catch (Exception e) {
