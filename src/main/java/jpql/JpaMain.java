@@ -220,6 +220,7 @@ public class JpaMain {
             /**
              * 페치조인 - 기본
              */
+            /*
             Team teamA = new Team();
             teamA.setName("teamA");
 
@@ -302,6 +303,47 @@ public class JpaMain {
 
             // 연관된 엔티티를 함께 조회한다.
             em.createQuery("select t from Team t join fetch t.members t").getResultList();
+             */
+            /**
+             * 페치조인 - 한계
+             */
+            // 다음과 같은 형태로 사용해서는 안된다.
+            // 페치 조인이라는 것은 기본적으로 연관된 데이터를 모두 가져오는 것이다.
+            // 필터링 해서 가져오고 싶다면 따로 조회를 해야한다.
+            // 연관된 데이터를 필터링해서 가져온 뒤 조작하게 될경우 누락된 데이터에 의해 잘못된 결과를 초례할 수 있다.
+            // 페치조인을 일반적으로 별칭을 주지않는것이 관례이다.
+            // JPA 에서의 의도한 설계는 t.members 로 그래프 탐색을 했을때, 팀과 연관된 멤버가 모두 있어야한다.
+            em.createQuery("select t from Team t join fetch t.members as m where m.age > 10");
+
+
+            // * 둘 이상의 컬렉션은 페치 조인 할 수없다.
+            //
+
+            //컬렉션을 페치조인 하면 페이징 API를 사용할 수 없다.
+            //하이버네이트에서는 경고메시지를 남기고, 메모리에서 페이징을 한다.
+            //이때 나가는 쿼리는, 페이징 쿼리가 나가지않는다.
+            //=> DB 에서 팀에대한 모든 데이터를 끌어온다 (100만건이라면 100만건을 메모리에 모두 올린다음에 페이징을 한다..)
+            em.createQuery("select t from Team t join fetch  t.members m")
+                    .setFirstResult(0)
+                    .setMaxResults(10)
+                    .getResultList();
+
+            // 이런 경우, 다음과 같이 방향을 바꾸어 해결하는 방법도 있다.
+            // 멤버와, 팀을 뒤집으면 회원이 다대일 이기때문에 페이징에 문제가 없다.
+            em.createQuery("select m from Member m join fetch m.team t");
+
+            // 다른 방법은, 페치조인을 제거한다.
+            // 제거 직후에는 members가 lazy loading 이기 때문에, team의 members를 사용할때  N + 1 문제가 발생한다.
+            // 이때  @BatchSize(size = 100) 를 사용한다.
+            // => 보통 1000이하의 값중에 크게준다.
+            // BatchSize를 지정하면, Team을 가져올때 현재 members는 레이지 로딩이다.
+            // IN 쿼리를 할때, 100개씩 날린다. ( Team의 결과가 4개라면 IN 쿼리 로 4개의 팀에대한 멤버를 모두 가져온다.)
+            // => IN 쿼리의 갯수는 BatchSize의 size 옵션 으로 지정한다.
+            // 이를 이용하면 최적화가 많이 된다
+            em.createQuery("select t from Team t")
+                    .setFirstResult(0)
+                    .setMaxResults(2)
+                    .getResultList();
 
 
             tx.commit();

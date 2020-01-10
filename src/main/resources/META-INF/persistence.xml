@@ -19,6 +19,8 @@
 <!--            쿼리가 나온 이유에 대한 주석을 나타냄 -->
             <property name="hibernate.use_sql_comments" value="true"/>
             <property name="hibernate.hbm2ddl.auto" value="create" />
+<!--            @BatchSize 를 글로벌하게 설정하는 방법 1000 이하로 적당한 값을 준다.-->
+            <property name="hibernate.default_batch_fetch_size" value="100"/>
         </properties>
     </persistence-unit>
 </persistence>
