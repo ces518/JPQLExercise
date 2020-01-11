@@ -307,6 +307,7 @@ public class JpaMain {
             /**
              * 페치조인 - 한계
              */
+            /*
             // 다음과 같은 형태로 사용해서는 안된다.
             // 페치 조인이라는 것은 기본적으로 연관된 데이터를 모두 가져오는 것이다.
             // 필터링 해서 가져오고 싶다면 따로 조회를 해야한다.
@@ -344,7 +345,36 @@ public class JpaMain {
                     .setFirstResult(0)
                     .setMaxResults(2)
                     .getResultList();
+             */
+            /**
+             * JPQL 엔티티 직접 사용
+             */
+            Team teamA = new Team();
+            teamA.setName("teamA");
 
+            Member member1 = new Member();
+            member1.setUsername("member1");
+            member1.setTeam(teamA);
+
+            Member member2 = new Member();
+            member2.setUsername("member2");
+            member2.setTeam(teamA);
+
+            em.persist(teamA);
+            em.persist(member1);
+            em.persist(member2);
+
+            // 기본 키값 사용
+            // 파라메터로 엔티티를 넘길경우 엔티티의 식별자가 사용된다.
+            // 당연한 결과이다. 엔티티를 식별하는것은 엔티티의 식별자 이기 때문...
+            Member findMember = em.createQuery("select m from Member m where m.id = :member", Member.class)
+                .setParameter("member", member1)
+                .getSingleResult();
+
+            // 외래 키값 사용
+            em.createQuery("select m from Member m where m.team = :team", Member.class)
+                .setParameter("team", teamA)
+                .getResultList();
 
             tx.commit();
         } catch (Exception e) {
