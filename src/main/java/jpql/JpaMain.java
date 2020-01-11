@@ -380,8 +380,17 @@ public class JpaMain {
             /**
              * Named 쿼리
              */
+            /*
             // 미리 정의 해둔 Named 쿼리를 사용한다.
             em.createNamedQuery("Member.findByUsername", Member.class);
+             */
+            /**
+             * 벌크 연산
+             */
+            // 벌크 연산을 사용하면 실행되기 이전에 자동으로 flush 된다.
+            // 영속성 컨텍스트를 무시하고 바로 SQL을 하기때문에 기본적으로 제공..
+            int result = em.createQuery("update Member m set m.age = 20")
+                            .executeUpdate();
 
             tx.commit();
         } catch (Exception e) {
