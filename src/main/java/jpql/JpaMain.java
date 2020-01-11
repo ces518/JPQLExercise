@@ -349,6 +349,7 @@ public class JpaMain {
             /**
              * JPQL 엔티티 직접 사용
              */
+            /*
             Team teamA = new Team();
             teamA.setName("teamA");
 
@@ -375,6 +376,12 @@ public class JpaMain {
             em.createQuery("select m from Member m where m.team = :team", Member.class)
                 .setParameter("team", teamA)
                 .getResultList();
+             */
+            /**
+             * Named 쿼리
+             */
+            // 미리 정의 해둔 Named 쿼리를 사용한다.
+            em.createNamedQuery("Member.findByUsername", Member.class);
 
             tx.commit();
         } catch (Exception e) {
